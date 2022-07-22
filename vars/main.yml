@@ -1,0 +1,12 @@
+jenkins_repo: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+jenkins_key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+aws_cli_source: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+jenkins_master_requirements: 
+  - git
+  - java-1.8.0-openjdk
+jenkins_slave_requirements:
+  - git
+  - java-1.8.0-openjdk
+  - unzip
+  - glibc
+  - groff

@@ -1,0 +1,76 @@
+---
+    - hosts: jenkins_master
+      become: yes
+      vars_files:
+        - /workdir/flaskex-ansible/vars/main.yml
+    
+      tasks:
+      - name: Download Jenkins release
+        get_url:
+          url: "{{ jenkins_repo }}"
+          dest: /etc/yum.repos.d/jenkins.repo
+      - name: Import jenkins key from url
+        ansible.builtin.rpm_key:
+          state: present
+          key: "{{ jenkins_key }}"
+      - name: Yum update
+        yum:
+          name: '*'
+          state: latest
+      - name: Install packages
+        yum:
+          name: "{{ jenkins_master_requirements }}"
+          state: present
+      - name: Install jenkins
+        yum:
+          name: jenkins
+          state: latest
+      - name: Enable jenkins
+        service:
+          name: jenkins
+          enabled: yes
+      - name: Start jenkins
+        service:
+          name: jenkins
+          state: started
+    
+    - hosts: jenkins_slave
+      become: yes
+      vars_files:
+        - /workdir/flaskex-ansible/vars/main.yml
+    
+      tasks:
+      - name: Yum update
+        yum:
+          name: '*'
+          state: latest
+      - name: Install packages
+        yum:
+          name: "{{ jenkins_slave_requirements }}"
+          state: present
+      - name: Download and unzip aws cli
+        unarchive: 
+          src: "{{ aws_cli_source }}"
+          dest: /tmp
+          remote_src: yes
+          creates: /tmp/awscli
+        register: aws_cli_installer
+      - name: Install aws cli
+        shell: sudo /tmp/awscli/install -i /usr/local/aws -b /usr/bin/aws
+        args:
+          creates: /usr/bin/aws
+        when: aws_cli_installer.changed
+      - name: Create flaskex directory if it does not exist
+        file:
+          path: /opt/flaskex
+          state: directory
+          owner: ec2-user
+          group: ec2-user
+          mode: '0774'
+      - name: Create flaskex service
+        template:
+          src: /workdir/flaskex-ansible/templates/flaskex.service
+          dest: /lib/systemd/system/flaskex.service
+          owner: root
+          group: root
+          mode: '0644'
