@@ -1,9 +1,17 @@
 jenkins_repo: https://pkg.jenkins.io/redhat-stable/jenkins.repo
 jenkins_key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
 aws_cli_source: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+terraform_version: https://releases.hashicorp.com/terraform/1.2.6/terraform_1.2.6_linux_amd64.zip
+aws_cli_tmp: /tmp/awscli
+aws_cli_path: /usr/bin/aws
+terraform_path: /usr/bin/terraform
+flaskex_dir: /opt/flaskex
+flaskex_service_path: /lib/systemd/system/flaskex.service
+
 jenkins_master_requirements: 
   - git
   - java-1.8.0-openjdk
+
 jenkins_slave_requirements:
   - git
   - java-1.8.0-openjdk
