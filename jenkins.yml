@@ -53,16 +53,26 @@
           src: "{{ aws_cli_source }}"
           dest: /tmp
           remote_src: yes
-          creates: /tmp/awscli
+          creates: "{{ aws_cli_tmp }}"
         register: aws_cli_installer
       - name: Install aws cli
-        shell: sudo /tmp/awscli/install -i /usr/local/aws -b /usr/bin/aws
+        shell: sudo "{{ aws_cli_tmp }}"/install -i /usr/local/aws -b "{{ aws_cli_path }}" 
         args:
-          creates: /usr/bin/aws
+          creates: "{{ aws_cli_path }}" 
         when: aws_cli_installer.changed
+      - name: check if terraform already installed
+        stat:
+          path: "{{ terraform_path }}"
+        register: terraform_exists
+      - name: install terraform
+        unarchive:
+          src: "{{ terraform_version }}"
+          dest: /usr/bin
+          remote_src: yes
+        when: terraform_exists.stat.exists == False
       - name: Create flaskex directory if it does not exist
         file:
-          path: /opt/flaskex
+          path: "{{ flaskex_dir }}"
           state: directory
           owner: ec2-user
           group: ec2-user
@@ -70,7 +80,7 @@
       - name: Create flaskex service
         template:
           src: /workdir/flaskex-ansible/templates/flaskex.service
-          dest: /lib/systemd/system/flaskex.service
+          dest: "{{ flaskex_service_path }}"
           owner: root
           group: root
           mode: '0644'
